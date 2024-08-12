@@ -3,6 +3,7 @@ package io.thanaphon.demos;
 import io.thanaphon.kafka.KafkaConfigurationBuilder;
 import org.apache.kafka.clients.consumer.ConsumerRecord;
 import org.apache.kafka.clients.consumer.ConsumerRecords;
+import org.apache.kafka.clients.consumer.CooperativeStickyAssignor;
 import org.apache.kafka.clients.consumer.KafkaConsumer;
 import org.apache.kafka.common.errors.WakeupException;
 import org.apache.kafka.common.serialization.StringDeserializer;
@@ -13,8 +14,8 @@ import java.time.Duration;
 import java.util.Arrays;
 import java.util.Properties;
 
-public class ConsumerDemoWithShutdown {
-    private static final Logger log = LoggerFactory.getLogger(ConsumerDemoWithShutdown.class.getSimpleName());
+public class ConsumerDemoCooperative {
+    private static final Logger log = LoggerFactory.getLogger(ConsumerDemoCooperative.class.getSimpleName());
     public static void main(String[] args) {
         log.info("I am a consumer");
         String groupId = "my-java-application";
@@ -26,6 +27,8 @@ public class ConsumerDemoWithShutdown {
         // Create consumer config
         properties.put("key.deserializer", StringDeserializer.class.getName());
         properties.put("value.deserializer", StringDeserializer.class.getName());
+        properties.put("partition.assignment.strategy", CooperativeStickyAssignor.class.getName());
+        properties.put("group.instance.id", "..."); // strategy for static assignment
 
         properties.put("group.id", groupId);
 
