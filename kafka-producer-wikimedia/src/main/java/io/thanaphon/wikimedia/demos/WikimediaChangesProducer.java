@@ -10,13 +10,14 @@ import com.launchdarkly.eventsource.EventHandler;
 
 import java.net.URI;
 import java.util.Properties;
+import java.util.concurrent.TimeUnit;
 
 public class WikimediaChangesProducer {
-    public static void main(String[] args) {
+    public static void main(String[] args) throws InterruptedException {
         // Create producer properties
         Properties properties = KafkaConfigurationBuilder.build();
-        properties.setProperty(ProducerConfig.KEY_SERIALIZER_CLASS_CONFIG, StringSerializer.class.getName());
-        properties.setProperty(ProducerConfig.VALUE_SERIALIZER_CLASS_CONFIG, StringDeserializer.class.getName());
+        properties.put(ProducerConfig.KEY_SERIALIZER_CLASS_CONFIG, StringSerializer.class.getName());
+        properties.put(ProducerConfig.VALUE_SERIALIZER_CLASS_CONFIG, StringSerializer.class.getName());
 
         // Create the producer
         KafkaProducer<String, String> producer = new KafkaProducer(properties);
@@ -24,7 +25,7 @@ public class WikimediaChangesProducer {
         String topic = "wikimedia.recentchange";
 
         // TODO
-        EventHandler eventHandler = null;
+        EventHandler eventHandler = new WikimediaChangeHandler(producer, topic);
         String url = "https://stream.wikimedia.org/v2/stream/recentchange";
 
         EventSource.Builder builder = new EventSource.Builder(eventHandler, URI.create(url));
@@ -32,5 +33,9 @@ public class WikimediaChangesProducer {
 
         // Start the producer in another thread
         eventSource.start();
+
+        // we produce for 10 minutes and block the program ujntil then
+
+        TimeUnit.MINUTES.sleep(10);
     }
 }
